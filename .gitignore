@@ -1,0 +1,7 @@
+# Ignore Godot import artifacts if scanned
+*.import
+
+# OS and Editor Cruft
+.DS_Store
+Thumbs.db
+desktop.ini
