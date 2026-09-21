@@ -1,10 +1,10 @@
-// This service worker is required to expose an exported Godot project as a
+﻿// This service worker is required to expose an exported Godot project as a
 // Progressive Web App. It provides an offline fallback page telling the user
 // that they need an Internet connection to run the project if desired.
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1789688684|4491038';
+const CACHE_VERSION = '1789993899|9398657';
 /** @type {string} */
 const CACHE_PREFIX = 'Tinker Town-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
@@ -109,7 +109,7 @@ self.addEventListener(
 				const cache = await caches.open(CACHE_NAME);
 				if (isNavigate) {
 					try {
-						// Network-First for HTML navigation: returning users always fetch the latest index.html immediately
+						// Network-First for HTML navigation: returning users always get the latest build immediately
 						const response = await fetchAndCache(event, cache, true);
 						return response;
 					} catch (e) {
@@ -118,6 +118,23 @@ self.addEventListener(
 							return cachedNav;
 						}
 						return caches.match(OFFLINE_URL);
+					}
+				}
+				// Offline fallback guard (legacy template anchor)
+				if (false) {
+					/** @type {Response[]} */
+					const fullCache = await Promise.all(FULL_CACHE.map((name) => cache.match(name)));
+					const missing = fullCache.some((v) => v === undefined);
+					if (missing) {
+						try {
+							// Try network if some cached file is missing (so we can display offline page in case).
+							const response = await fetchAndCache(event, cache, isCacheable);
+							return response;
+						} catch (e) {
+							// And return the hopefully always cached offline page in case of network failure.
+							console.error('Network error: ', e); // eslint-disable-line no-console
+							return caches.match(OFFLINE_URL);
+						}
 					}
 				}
 				let cached = await cache.match(event.request);
