@@ -1,10 +1,10 @@
-﻿// This service worker is required to expose an exported Godot project as a
+// This service worker is required to expose an exported Godot project as a
 // Progressive Web App. It provides an offline fallback page telling the user
 // that they need an Internet connection to run the project if desired.
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1789993899|9398657';
+const CACHE_VERSION = '1790888476|11764986';
 /** @type {string} */
 const CACHE_PREFIX = 'Tinker Town-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
@@ -21,7 +21,6 @@ const CACHEABLE_FILES = ["index.wasm","index.pck"];
 const FULL_CACHE = CACHED_FILES.concat(CACHEABLE_FILES);
 
 self.addEventListener('install', (event) => {
-	self.skipWaiting();
 	event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHED_FILES)));
 });
 
@@ -34,8 +33,6 @@ self.addEventListener('activate', (event) => {
 	).then(function () {
 		// Enable navigation preload if available.
 		return ('navigationPreload' in self.registration) ? self.registration.navigationPreload.enable() : Promise.resolve();
-	}).then(function () {
-		return self.clients.claim();
 	}));
 });
 
@@ -108,20 +105,7 @@ self.addEventListener(
 				// Try to use cache first
 				const cache = await caches.open(CACHE_NAME);
 				if (isNavigate) {
-					try {
-						// Network-First for HTML navigation: returning users always get the latest build immediately
-						const response = await fetchAndCache(event, cache, true);
-						return response;
-					} catch (e) {
-						let cachedNav = await cache.match(event.request);
-						if (cachedNav != null) {
-							return cachedNav;
-						}
-						return caches.match(OFFLINE_URL);
-					}
-				}
-				// Offline fallback guard (legacy template anchor)
-				if (false) {
+					// Check if we have full cache during HTML page request.
 					/** @type {Response[]} */
 					const fullCache = await Promise.all(FULL_CACHE.map((name) => cache.match(name)));
 					const missing = fullCache.some((v) => v === undefined);
